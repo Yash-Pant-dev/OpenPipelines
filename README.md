@@ -8,4 +8,6 @@ Each principal stores all the environments, functions & data sources, and distri
 Only the principal contains the database.
 Each agent stores only the function & sources/intermediary sources of tasks, and returns them to the sink when needed.
 
-# Replicable steps - Ideally a single script should setup everything for each agent and the master node.
+# Common changes needed for a compute fleet
+1. Code is built generally for a windows system where clear POSIX methods do not exist.
+   Look for changes in - setup.py (virtual env function)

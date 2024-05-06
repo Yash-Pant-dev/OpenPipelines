@@ -5,4 +5,13 @@ node_modules
 .env
 
 # Custom
+
 notes.md
+env.json
+
+# Master Venv
+Include
+Lib
+Scripts
+pyvenv.cfg
+requirements.txt
