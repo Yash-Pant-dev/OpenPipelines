@@ -1,7 +1,10 @@
 # Sets up the master node in the given folder.
 # Tasks -
 # Verify presence of mongo, mongosh
-# Build env file
+# [X]Build env file
+# Create run file
+# TODO: Create venv inside another folder.
+# Create run file. The file will.
 
 import os
 import sys
@@ -124,10 +127,11 @@ def writeRequirements():
     f.close()
 
 def installRequirements():
-    os.system(f"{masterDirPath}/Scripts/activate.bat")
+    activate = f"{masterDirPath}/Scripts/activate.bat"
+    subprocess.run(activate)
     venvExePath = f"{masterDirPath}/Scripts/python.exe"
     venvCmd = f"{venvExePath} -m pip install -r {masterDirPath}/requirements.txt"
-
+    # FIXME: Does not work on first run.
     subprocess.run(venvCmd)
 
 def inVirtualEnv():
@@ -141,4 +145,4 @@ if __name__ == "__main__":
         print("Setup finished.")
     else:
         virtualEnvSetup()
-        os.system(f"{masterDirPath}/Scripts/python.exe {masterDirPath}/setup.py")
+        os.system(f"{masterDirPath}/Scripts/python.exe {masterDirPath}/setup.master.py")

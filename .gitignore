@@ -8,8 +8,10 @@ node_modules
 
 notes.md
 env.json
+temp
 
-# Master Venv
+# Virtual Environment
+
 Include
 Lib
 Scripts
