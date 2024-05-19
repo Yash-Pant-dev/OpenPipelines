@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const defaultTheme = require('tailwindcss/defaultTheme')
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -17,7 +19,16 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        'sans': ['kpark', ...defaultTheme.fontFamily.sans]
+      },
       colors: {
+        grey: "#0C0E11",
+        lgrey: "#31363F",
+        pink: "#EF798A",
+        beige: "#DEDBD2",
+        white: "#EEEEEE",
+        blue: "#6689A1",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

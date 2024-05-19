@@ -8,7 +8,7 @@ node_modules
 
 notes.md
 env.json
-temp
+temp/
 
 # Virtual Environment
 

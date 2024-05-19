@@ -1,164 +1,166 @@
-# Setup for Master nodes in Coordinate framework.
+# Coordinate
 # Author - Yash Pant
 
-# Sets up the master node in the given folder.
-# Tasks -
-# Verify presence of mongo, mongosh
-# [X]Build env file
-# Create run file
-# TODO: Create venv inside another folder.
-# Create run file. The file will start the server to communicate with child nodes.
-# Maybe add a cleanup mode that deletes all files in the dir.
+# Master node setup
 
+import json
 import os
 import sys
 import pathlib 
-import subprocess
 
+VERSION = "0.1.0"
 class MasterEnv:
     def __init__(self):
         self.node_name = None
         self.setup_type = "master"
-        self.version = "0.1.0"
-
+        self.version = VERSION
         # Collects information about the existing env and desired setup.
         self.database = Database_Mongo()
         self.network = Network_Local()
         self.storage = Storage_Local()
-        
+        self.webui = WebUI()
         # Executes all details collected by the previous extensions.
         self.runner = Runner_Python()
 
-class Runner_Python:
-    ext_name = "Runner_Python"
-    ext_ver = "0.1.0"
-    pyVersion = None
-    path = None
-
 class Database_Mongo:
-    ext_name = "Database_Mongo"
-    ext_ver = "0.1.0"
-    db_path = None
-    sh_path = None
+    def __init__(self):
+        self.ext_name = "Database_Mongo"
+
+        self.db_path = None
+        self.sh_path = None
 
 class Network_Local:
-    ext_name = "Network_Local"
-    ext_ver = "0.1.0"
-    port = None
+    def __init__(self):
+        self.ext_name = "Network_Local"
+
+        self.webui_port = None
+        self.server_port = None
+        self.worker_ips = None
 
 class Storage_Local:
-    ext_name = "Storage_Local"
-    ext_ver = "0.1.0"
-    path = None
+    def __init__(self):
+        self.ext_name = "Storage_Local"
+
+        self.path = None
+
+class WebUI:
+    def __init__(self):
+        self.run_command = "npm run dev"
+
+class Runner_Python:
+    def __init__(self):
+        self.ext_name = "Runner_Python"
+
+        self.pyVersion = None
+        self.venv_path = None
+        self.path = None
 
 env = MasterEnv()
 
-masterDirPath = pathlib.Path(__file__).parent.resolve().__str__().replace("\\", "/")
-requirements = """
-jsonpickle==3.0.4
-"""
+SETUP_DIR_PATH = pathlib.Path(__file__).parent.resolve().__str__().replace("\\", "/")
 
 def getNodeName():
-    print("Enter name of master node: ")
+    print("Name this node [Commonly the device name]: ")
     env.node_name = input()
 
 def getPythonDetails():
     verifyPVersion()
     getPExecutable()
+    getVenvPath()
 
 def verifyPVersion():
     ver = sys.version.split(" ")[0]
     print("Py interpreter version:", ver)
-    print("Press y if compatible with 3.12.3")
-    
-    ok = input()
-    if (ok != "y"):
-        exit()
     env.runner.pyVersion = ver
 
 def getPExecutable():
-    env.runner.path = sys.executable
+    path = sys.executable
+    path = path.replace('\\', "/")
+    env.runner.path = path
+
+def getVenvPath():
+    print("Python virtual env path: ")
+    env.runner.venv_path = input()
 
 def getMongodbDetails():
     getMDbPath()
     getMShellPath()
 
 def getMDbPath():
-    print("Enter mongo db path: ")
+    print("Mongo db path: ")
     env.database.db_path = input()
 
 def getMShellPath():
-    print("Enter mongo shell path: ")
+    print("Mongo shell path: ")
     env.database.sh_path = input()
 
-def getNetworkDetails():
-    getNPort()
+def getWebUIDetails():
+    print("Web-client start command [blank for default]:")
+    x = input()
+    if not x == "":
+        env.webui.run_command = x
 
-def getNPort():
-    print("Enter network port: ")
-    env.network.port = input()
+def getNetworkDetails():
+    getWebUIPort()
+    getServerPort()
+    getWorkerIPs()
+
+def getWebUIPort():
+    print("Webui port: ")
+    env.network.webui_port = input()
+
+def getServerPort():
+    print("Server port: ")
+    env.network.server_port = input()
+
+def getWorkerIPs():
+    print("Worker node IPs: ")
+    ips = input().split(',')
+    for index, ip in enumerate(ips):
+        ips[index] = ip.strip()
+    env.network.worker_ips = ips
 
 def getStorageDetails():
     getSPath()
 
 def getSPath():
-    print("Enter storage path: ")
+    print("Storage path: ")
     env.storage.path = input()
 
 def envSetup():
-    print("Environment setup")
+    print("Coordinate Environment Setup")
     getNodeName()
     getPythonDetails()
     getMongodbDetails()
+    getWebUIDetails()
     getNetworkDetails()
     getStorageDetails()
 
 def envWrite():
-    print("Writing environment file")
-
     import jsonpickle
-    envFileData = jsonpickle.encode(env)
-    envFileLoc = (masterDirPath + "/env.json")
-    f = open(envFileLoc, "w")
-    f.write(envFileData)
-    f.close()
+    env_file = f"{env.storage.path}/env.json"
+    os.makedirs(os.path.dirname(env_file), exist_ok=True)
+    f = open(env_file, "w+")
+    env_data = jsonpickle.encode(env, unpicklable=False)
+    print("- - - -")
+    print("Master Environment file:")
+    print(json.dumps(json.loads(env_data), indent=4))
+    print("- - - -")
+    f.write(env_data)
 
-def virtualEnvSetup():
-    print("Virtual Env setup")
-    try:
-        f = open(f"{masterDirPath}/pyvenv.cfg", "x")
-    except:
-        print("Virtual env already exists. Enter y to reinstall.")
-        if (input() != "y"):
-            installRequirements()
-            return
-    writeRequirements()
-    os.system(f"python -m venv {masterDirPath}")
-    installRequirements()
-    
-
-def writeRequirements():
-    f = open(f"{masterDirPath}/requirements.txt", "w")
-    f.write(requirements)
-    f.close()
-
-def installRequirements():
-    activate = f"{masterDirPath}/Scripts/activate.bat"
-    subprocess.run(activate)
-    venvExePath = f"{masterDirPath}/Scripts/python.exe"
-    venvCmd = f"{venvExePath} -m pip install -r {masterDirPath}/requirements.txt"
-    # FIXME: Does not work on first run.
-    subprocess.run(venvCmd)
-
-def inVirtualEnv():
-    return sys.prefix != sys.base_prefix
+def preinstall_info():
+    print("- - - -")
+    print("Ensure you have the following installed already:")
+    print("A python version that is compliant with 3.12")
+    print("A py virtual environment with jsonpickle (found in requirements.setup.txt)")
+    print("Mongo DB and shell")
+    print("- - - -")
 
 if __name__ == "__main__":
-    print("OpenPipelines master node setup")
-    if (inVirtualEnv()):
-        envSetup()
-        envWrite()
-        print("Setup finished.")
-    else:
-        virtualEnvSetup()
-        os.system(f"{masterDirPath}/Scripts/python.exe {masterDirPath}/setup.master.py")
+    print(f"Coordinate -v{VERSION}")
+    print(f"Master node setup")
+    preinstall_info()
+    envSetup()
+    envWrite()
+
+    print("Setup completed. Use the run file to start the server.")
