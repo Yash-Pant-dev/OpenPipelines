@@ -152,7 +152,7 @@ def preinstall_info():
     print("- - - -")
     print("Ensure you have the following installed already:")
     print("A python version that is compliant with 3.12")
-    print("A py virtual environment with jsonpickle (found in requirements.setup.txt)")
+    print("A py virtual environment & requirements(found in requirements.master.txt)")
     print("Mongo DB and shell")
     print("- - - -")
 
@@ -162,5 +162,5 @@ if __name__ == "__main__":
     preinstall_info()
     envSetup()
     envWrite()
-
+    # TODO: copyRunToStorage()
     print("Setup completed. Use the run file to start the server.")
